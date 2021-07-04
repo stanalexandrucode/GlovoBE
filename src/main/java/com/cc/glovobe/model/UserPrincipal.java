@@ -1,4 +1,4 @@
-package com.cc.glovobe.Model;
+package com.cc.glovobe.model;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

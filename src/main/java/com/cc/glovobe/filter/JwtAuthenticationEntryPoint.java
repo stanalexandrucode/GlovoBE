@@ -1,6 +1,6 @@
 package com.cc.glovobe.filter;
 
-import com.cc.glovobe.Model.HttpResponse;
+import com.cc.glovobe.model.HttpResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;

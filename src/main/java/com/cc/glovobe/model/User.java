@@ -1,4 +1,4 @@
-package com.cc.glovobe.Model;
+package com.cc.glovobe.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

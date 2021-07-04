@@ -2,7 +2,7 @@ package com.cc.glovobe.exception;
 
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.cc.glovobe.Model.HttpResponse;
+import com.cc.glovobe.model.HttpResponse;
 import com.cc.glovobe.exception.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
