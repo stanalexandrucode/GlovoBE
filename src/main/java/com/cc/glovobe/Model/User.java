@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
+
 
 
 
@@ -21,7 +21,6 @@ public class User implements Serializable {
 
     private String firstName;
     private String lastName;
-    @Email(regexp = ".+@.+\\..+")
     @Column(
             name = "email",
             nullable = false,
