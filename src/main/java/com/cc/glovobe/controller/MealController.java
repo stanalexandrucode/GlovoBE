@@ -2,14 +2,12 @@ package com.cc.glovobe.controller;
 
 import com.cc.glovobe.dto.MealDto;
 import com.cc.glovobe.exception.ExceptionHandling;
+import com.cc.glovobe.exception.domain.FavoriteMealNotFoundException;
 import com.cc.glovobe.service.MealService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
@@ -34,5 +32,16 @@ public class MealController extends ExceptionHandling {
         return new ResponseEntity<>(meals, OK);
     }
 
+    @GetMapping("/prices/category/{category}")
+    public ResponseEntity<Set<MealDto>> getMealByCategory(@PathVariable String category) {
+        Set<MealDto> meals = mealService.getMealByCategory(category);
+        return new ResponseEntity<>(meals, OK);
+    }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Integer> mealPrice(@PathVariable Long id) throws FavoriteMealNotFoundException {
+        Integer mealPrice = mealService.getById(id);
+        return new ResponseEntity<>(mealPrice, OK);
+    }
 
 }
