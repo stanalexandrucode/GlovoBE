@@ -8,6 +8,7 @@ import com.cc.glovobe.model.User;
 import com.cc.glovobe.model.UserPrincipal;
 import com.cc.glovobe.repository.UserRepository;
 import com.cc.glovobe.service.ConfirmationTokenService;
+import com.cc.glovobe.service.EmailService;
 import com.cc.glovobe.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -35,14 +37,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final ConfirmationTokenService confirmationTokenService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final EmailService emailService;
 
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, ConfirmationTokenService confirmationTokenService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, ConfirmationTokenService confirmationTokenService, BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService) {
         this.userRepository = userRepository;
         this.confirmationTokenService = confirmationTokenService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-
+        this.emailService = emailService;
     }
 
 
@@ -61,7 +64,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public String register(RegistrationRequest request) throws EmailExistException {
+    public String register(RegistrationRequest request) throws EmailExistException, MessagingException {
         validateNewEmail(request.getEmail());
         User user = new User();
         user.setEmail(request.getEmail());
@@ -73,7 +76,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setNonLocked(true);
         user.setEnabled(false);
         String token = signUpUser(user);
-        String link = REGISTER_CONFIRM_TOKEN + token;
+        emailService.sendAuthenticationLinkConfirmation(token, request.getEmail());
         return token;
     }
 
@@ -140,6 +143,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User findUserByEmail(String email) {
-        return null;
+       return userRepository.findUserByEmail(email);
     }
 }
