@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 public interface UserService {
-    User register(RegistrationRequest request) throws UserNotFoundException, UsernameExistException, EmailExistException, MessagingException;
+    String register(RegistrationRequest request) throws UserNotFoundException, UsernameExistException, EmailExistException, MessagingException;
 
     List<User> getUsers();
 
