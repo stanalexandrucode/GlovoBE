@@ -1,16 +1,29 @@
 package com.cc.glovobe.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.*;
 
 
-
-
-@Entity(name = "app_user")
+@Builder
+@AllArgsConstructor
+@Getter
+@Setter
+@Entity(name = "AppUser")
+@Table(name = "user_table",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = "email",
+                        name = "uk_email_uniq"
+                )
+        }
+)
 public class User implements Serializable {
 
     @Id
@@ -29,6 +42,15 @@ public class User implements Serializable {
     private String email;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    @OneToMany(
+            cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+            mappedBy = "user",
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<Favorite> favorites = new HashSet<>();
+
     private String role; //ROLE_USER{ read, edit }, ROLE_ADMIN {delete}
     private String[] authorities;
     private Boolean isNonLocked;

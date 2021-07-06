@@ -1,13 +1,14 @@
 package com.cc.glovobe.model;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity(name = "Meal")
 @Table(name = "meal")
@@ -18,9 +19,16 @@ import javax.persistence.*;
 public class Meal {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(nullable = false, updatable = false)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @SequenceGenerator(
+            name = "meal_sequence",
+            sequenceName = "meal_sequence",
+            allocationSize = 1
+    )
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "meal_sequence"
+    )
+    @Column(name = "id")
     private Long id;
 
     @Column(
@@ -34,4 +42,36 @@ public class Meal {
     private String category;
 
 
+    @OneToMany(
+            cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+            mappedBy = "meal"
+    )
+    private Set<Favorite> favorites = new HashSet<>();
+
+
+    public Meal(Long id, Integer price) {
+        this.id = id;
+        this.price = price;
+    }
+
+
+    public Set<Favorite> getFavorites() {
+        return favorites;
+    }
+
+    public void addUserFavoriteMeal(Favorite favorite) {
+        favorites.add(favorite);
+    }
+
+    public void removeUserFavoriteMeal(Favorite favorite) {
+        favorites.remove(favorite);
+    }
+
+    @Override
+    public String toString() {
+        return "Meal{" +
+                "id=" + id +
+                ", price=" + price +
+                '}';
+    }
 }
