@@ -1,14 +1,11 @@
 package com.cc.glovobe.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "Meal")
 @Table(name = "meal")
@@ -16,6 +13,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Meal {
 
     @Id
@@ -46,7 +44,7 @@ public class Meal {
             cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
             mappedBy = "meal"
     )
-    private Set<Favorite> favorites = new HashSet<>();
+    private List<Favorite> favorites = new ArrayList<>();
 
 
     public Meal(Long id, Integer price) {
@@ -55,23 +53,16 @@ public class Meal {
     }
 
 
-    public Set<Favorite> getFavorites() {
-        return favorites;
-    }
-
-    public void addUserFavoriteMeal(Favorite favorite) {
+    public void addFavorite(Favorite favorite) {
         favorites.add(favorite);
     }
 
-    public void removeUserFavoriteMeal(Favorite favorite) {
+    public void removeFavorite(Favorite favorite) {
         favorites.remove(favorite);
     }
 
-    @Override
-    public String toString() {
-        return "Meal{" +
-                "id=" + id +
-                ", price=" + price +
-                '}';
+    public List<Favorite> getFavorites() {
+        return favorites;
     }
+
 }

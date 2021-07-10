@@ -3,18 +3,16 @@ package com.cc.glovobe.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
-
+@ToString
 @Builder
 @AllArgsConstructor
-@Getter
-@Setter
 @Entity(name = "AppUser")
 @Table(name = "user_table",
         uniqueConstraints = {
@@ -49,7 +47,7 @@ public class User implements Serializable {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private Set<Favorite> favorites = new HashSet<>();
+    private List<Favorite> favorites = new ArrayList<>();
 
     private String role; //ROLE_USER{ read, edit }, ROLE_ADMIN {delete}
     private String[] authorities;
@@ -142,5 +140,47 @@ public class User implements Serializable {
 
     public void setEnabled(Boolean enabled) {
         isEnabled = enabled;
+    }
+
+    public void addFavorite(Favorite favorite) {
+        System.out.println("in user");
+        favorites.add(favorite);
+    }
+
+    public void removeFavorite(Favorite favorite) {
+        favorites.remove(favorite);
+    }
+
+    public List<Favorite> getFavorites() {
+        return favorites;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(favorites, user.favorites) && Objects.equals(role, user.role) && Arrays.equals(authorities, user.authorities) && Objects.equals(isNonLocked, user.isNonLocked) && Objects.equals(isEnabled, user.isEnabled);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(id, firstName, lastName, email, password, favorites, role, isNonLocked, isEnabled);
+        result = 31 * result + Arrays.hashCode(authorities);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", role='" + role + '\'' +
+                ", authorities=" + Arrays.toString(authorities) +
+                ", isNonLocked=" + isNonLocked +
+                ", isEnabled=" + isEnabled +
+                '}';
     }
 }

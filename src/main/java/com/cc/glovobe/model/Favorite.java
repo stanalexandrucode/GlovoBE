@@ -13,10 +13,6 @@ import java.util.Objects;
 
 @Entity(name = "Favorite")
 @Table(name = "favorite")
-@Setter
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
 
 public class Favorite {
 
@@ -49,6 +45,22 @@ public class Favorite {
         this.createdAt = createdAt;
     }
 
+    public Favorite(FavoriteId id, User user, Meal meal, LocalDateTime createdAt) {
+        this.id = id;
+        this.user = user;
+        this.meal = meal;
+        this.createdAt = createdAt;
+    }
+    public Favorite(FavoriteId id, Meal meal, LocalDateTime createdAt) {
+        this.id = id;
+        this.meal = meal;
+        this.createdAt = createdAt;
+    }
+
+    public Favorite() {
+
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -60,5 +72,45 @@ public class Favorite {
     @Override
     public int hashCode() {
         return Objects.hash(id, createdAt);
+    }
+
+    public FavoriteId getId() {
+        return id;
+    }
+
+    public void setId(FavoriteId id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Meal getMeal() {
+        return meal;
+    }
+
+    public void setMeal(Meal meal) {
+        this.meal = meal;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Favorite{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }

@@ -1,10 +1,7 @@
 package com.cc.glovobe.embededId;
 
 import com.sun.istack.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -16,6 +13,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Setter
 @Getter
+@ToString
 public class FavoriteId implements Serializable {
 
     @Column(name = "user_id")
@@ -38,4 +36,6 @@ public class FavoriteId implements Serializable {
     public int hashCode() {
         return Objects.hash(userId, mealId);
     }
+
+
 }
