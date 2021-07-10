@@ -33,7 +33,7 @@ public class RecipeController {
     }
 
     @PostMapping("/addRecipe")
-    public ResponseEntity<?> addNewRecipeItem(@RequestBody Recipe recipe, @RequestHeader("Authorization") String token) throws IllegalStateException, UserNotFoundException {
+    public ResponseEntity<?> addNewRecipeItem(@RequestBody Recipe recipe) throws IllegalStateException, UserNotFoundException {
         String userPrincipal = principal.getAuthentication().getName();
         recipeService.saveRecipe(recipe, userPrincipal);
         return ResponseEntity.accepted().body("recipe added");

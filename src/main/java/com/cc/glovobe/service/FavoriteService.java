@@ -1,10 +1,12 @@
 package com.cc.glovobe.service;
 
 import com.cc.glovobe.dto.FavoriteDto;
+import com.cc.glovobe.dto.MealDto;
 import com.cc.glovobe.embededId.FavoriteId;
 import com.cc.glovobe.exception.domain.FavoriteMealNotFoundException;
 import com.cc.glovobe.exception.domain.MealNotFoundException;
 import com.cc.glovobe.exception.domain.UserNotFoundException;
+import com.cc.glovobe.mapper.MealMapper;
 import com.cc.glovobe.model.Favorite;
 import com.cc.glovobe.model.Meal;
 import com.cc.glovobe.model.User;
@@ -16,6 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toSet;
 
 @Service
 public class FavoriteService {
@@ -25,12 +32,14 @@ public class FavoriteService {
     private final UserRepository userRepository;
     private final MealRepository mealRepository;
     private final FavoriteRepository favoriteRepository;
+    private final MealMapper mealMapper;
 
     @Autowired
-    public FavoriteService(UserRepository userRepository, MealRepository mealRepository, FavoriteRepository favoriteRepository) {
+    public FavoriteService(UserRepository userRepository, MealRepository mealRepository, FavoriteRepository favoriteRepository, MealMapper mealMapper) {
         this.userRepository = userRepository;
         this.mealRepository = mealRepository;
         this.favoriteRepository = favoriteRepository;
+        this.mealMapper = mealMapper;
     }
 
     @Transactional
@@ -86,4 +95,12 @@ public class FavoriteService {
                 .orElseThrow(()->new FavoriteMealNotFoundException(String.format("favorite with id=%s not found", id)));
     }
 
+    @Transactional(readOnly = true)
+    public List<MealDto> getAllMeals(String principal) throws UserNotFoundException {
+        User user = getUserByEmail(principal);
+        return user.getFavorites()
+                .stream()
+                .map(mealMapper::mealToMealDto)
+                .collect(Collectors.toList());
+    }
 }

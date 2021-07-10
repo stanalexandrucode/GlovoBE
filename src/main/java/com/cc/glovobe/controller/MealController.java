@@ -5,13 +5,12 @@ import com.cc.glovobe.exception.ExceptionHandling;
 import com.cc.glovobe.exception.domain.FavoriteMealNotFoundException;
 import com.cc.glovobe.service.MealService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping("/meal")

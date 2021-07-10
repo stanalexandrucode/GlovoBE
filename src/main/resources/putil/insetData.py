@@ -16,7 +16,7 @@ def insert_data(category):
                     (i["idMeal"], random.randint(1, 100), category))
 
 
-insert_data("Breakfast")
+insert_data("Goat")
 
 conn.commit()
 cur.close()
