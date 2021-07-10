@@ -55,6 +55,7 @@ public class RecipeService {
         for (Recipe recipe : list) {
             RecipeDto recipeDto = new RecipeDto();
             recipeDto.setId(recipe.getId());
+            recipeDto.setEmail(recipe.getUser().getEmail());
             recipeDto.setDescription(recipe.getDescription());
             recipeDto.setName(recipe.getName());
             recipeDto.setUserFirstName(recipe.getUser().getFirstName());
