@@ -139,15 +139,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     private void validateLoginAttempt(User user) {
-        UserPrincipal userPrincipal = new UserPrincipal(user);
         if (user.getIsNonLocked()) {
-            if (loginAttemptService.hasExceededMaxAttempts(userPrincipal.getUsername())) {
+            if (loginAttemptService.hasExceededMaxAttempts(user.getEmail())) {
                 user.setIsNonLocked(false);
             } else {
                 user.setIsNonLocked(true);
             }
         } else {
-            loginAttemptService.evictUserFromLoginAttemptCache(userPrincipal.getUsername());
+            loginAttemptService.evictUserFromLoginAttemptCache(user.getEmail());
         }
     }
 

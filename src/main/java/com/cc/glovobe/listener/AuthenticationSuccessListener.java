@@ -1,7 +1,6 @@
 package com.cc.glovobe.listener;
 
 
-import com.cc.glovobe.model.User;
 import com.cc.glovobe.model.UserPrincipal;
 import com.cc.glovobe.service.LoginAttemptService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +21,9 @@ public class AuthenticationSuccessListener {
     @EventListener
     public void onAuthenticationSuccess(AuthenticationSuccessEvent event) {
         Object principal = event.getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            User user = (User) event.getAuthentication().getPrincipal();
-            UserPrincipal userPrincipal = new UserPrincipal(user);
-            loginAttemptService.evictUserFromLoginAttemptCache(userPrincipal.getUsername());
+        if (principal instanceof UserPrincipal) {
+            UserPrincipal user = (UserPrincipal) event.getAuthentication().getPrincipal();
+            loginAttemptService.evictUserFromLoginAttemptCache(user.getUsername());
         }
     }
 }
