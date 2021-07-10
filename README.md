@@ -1,7 +1,7 @@
 # Team Team Delivery
 
 The place to choose your next gastronomical delight by browsing through the available categories, by choosing from the "Chef's recommendations" or by using the search bar and entering a main component by witch to filter.
-## For the [front-end](https://github.com/stanalexandrucode/Glovo-FrontEnd) of the app.
+## Git repo for the [front-end](https://github.com/stanalexandrucode/Glovo-FrontEnd) of the app.
 
 ![Register](/img/register.png 'Register')
 
