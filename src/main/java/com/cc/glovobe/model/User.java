@@ -126,11 +126,11 @@ public class User implements Serializable {
         this.authorities = authorities;
     }
 
-    public Boolean getNonLocked() {
+    public Boolean getIsNonLocked() {
         return isNonLocked;
     }
 
-    public void setNonLocked(Boolean nonLocked) {
+    public void setIsNonLocked(Boolean nonLocked) {
         isNonLocked = nonLocked;
     }
 

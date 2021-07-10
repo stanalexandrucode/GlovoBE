@@ -9,6 +9,7 @@ import com.cc.glovobe.model.UserPrincipal;
 import com.cc.glovobe.repository.UserRepository;
 import com.cc.glovobe.service.ConfirmationTokenService;
 import com.cc.glovobe.service.EmailService;
+import com.cc.glovobe.service.LoginAttemptService;
 import com.cc.glovobe.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,30 +39,34 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final ConfirmationTokenService confirmationTokenService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailService emailService;
+    private final LoginAttemptService loginAttemptService;
 
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, ConfirmationTokenService confirmationTokenService, BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService) {
+    public UserServiceImpl(UserRepository userRepository, ConfirmationTokenService confirmationTokenService, BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService, LoginAttemptService loginAttemptService) {
         this.userRepository = userRepository;
         this.confirmationTokenService = confirmationTokenService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.emailService = emailService;
+        this.loginAttemptService = loginAttemptService;
     }
 
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findUserByEmail(email);
+    public UserDetails loadUserByUsername(String usernameEmail) throws UsernameNotFoundException {
+        User user = userRepository.findUserByEmail(usernameEmail);
         if (user == null) {
-            LOGGER.error(USER_NOT_FOUND_WITH_EMAIL + email);
-            throw new UsernameNotFoundException(USER_NOT_FOUND_WITH_EMAIL + email);
+            LOGGER.error(USER_NOT_FOUND_WITH_EMAIL + usernameEmail);
+            throw new UsernameNotFoundException(USER_NOT_FOUND_WITH_EMAIL + usernameEmail);
         } else {
+            validateLoginAttempt(user);
             userRepository.save(user);
             UserPrincipal userPrincipal = new UserPrincipal(user);
-            LOGGER.info(RETURNING_FOUND_USER_WITH_EMAIL + email);
+            LOGGER.info(RETURNING_FOUND_USER_WITH_EMAIL + usernameEmail);
             return userPrincipal;
         }
     }
+
 
     @Override
     public String register(RegistrationRequest request) throws EmailExistException, MessagingException {
@@ -73,7 +78,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
         user.setRole(ROLE_USER.name());
         user.setAuthorities(ROLE_USER.getAuthorities());
-        user.setNonLocked(true);
+        user.setIsNonLocked(true);
         user.setEnabled(false);
         String token = signUpUser(user);
         emailService.sendAuthenticationLinkConfirmation(token, request.getEmail());
@@ -132,6 +137,19 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return token;
     }
 
+    private void validateLoginAttempt(User user) {
+        UserPrincipal userPrincipal = new UserPrincipal(user);
+        if (user.getIsNonLocked()) {
+            if (loginAttemptService.hasExceededMaxAttempts(userPrincipal.getUsername())) {
+                user.setIsNonLocked(false);
+            } else {
+                user.setIsNonLocked(true);
+            }
+        } else {
+            loginAttemptService.evictUserFromLoginAttemptCache(userPrincipal.getUsername());
+        }
+    }
+
     public int enableUser(String email) {
         return userRepository.enableUser(email);
     }
@@ -143,6 +161,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User findUserByEmail(String email) {
-       return userRepository.findUserByEmail(email);
+        return userRepository.findUserByEmail(email);
     }
 }
