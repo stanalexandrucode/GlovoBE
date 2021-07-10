@@ -2,8 +2,8 @@ package com.cc.glovobe.exception;
 
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.cc.glovobe.model.HttpResponse;
 import com.cc.glovobe.exception.domain.*;
+import com.cc.glovobe.model.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;

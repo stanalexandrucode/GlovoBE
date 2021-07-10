@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -55,7 +56,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String usernameEmail) throws UsernameNotFoundException {
         User user = userRepository.findUserByEmail(usernameEmail);
-        if (user == null) {
+        if (user == null || !user.getEnabled()) {
             LOGGER.error(USER_NOT_FOUND_WITH_EMAIL + usernameEmail);
             throw new UsernameNotFoundException(USER_NOT_FOUND_WITH_EMAIL + usernameEmail);
         } else {
