@@ -1,6 +1,7 @@
 package com.cc.glovobe.service.impl;
 
 import com.cc.glovobe.exception.domain.EmailExistException;
+import com.cc.glovobe.exception.domain.TokenExpiredException;
 import com.cc.glovobe.exception.domain.TokenNotFoundException;
 import com.cc.glovobe.model.ConfirmationToken;
 import com.cc.glovobe.model.RegistrationRequest;
@@ -96,7 +97,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     @Transactional
-    public String confirmToken(String token) throws TokenNotFoundException {
+    public String confirmToken(String token) throws TokenNotFoundException, EmailExistException, TokenExpiredException {
 
         //verify token if exists
         ConfirmationToken confirmationToken = confirmationTokenService.getToken(token);
@@ -104,14 +105,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         //verify token if used
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new IllegalStateException(EMAIL_ALREADY_CONFIRMED);
+            throw new EmailExistException(EMAIL_ALREADY_CONFIRMED);
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         //verify token if expired
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException(TOKEN_EXPIRED + token);
+            throw new TokenExpiredException(TOKEN_EXPIRED + token);
         }
 
         confirmationTokenService.setConfirmedAt(token);

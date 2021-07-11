@@ -1,10 +1,7 @@
 package com.cc.glovobe.controller;
 
 import com.cc.glovobe.exception.ExceptionHandling;
-import com.cc.glovobe.exception.domain.EmailExistException;
-import com.cc.glovobe.exception.domain.TokenNotFoundException;
-import com.cc.glovobe.exception.domain.UserNotFoundException;
-import com.cc.glovobe.exception.domain.UsernameExistException;
+import com.cc.glovobe.exception.domain.*;
 import com.cc.glovobe.model.LoginRequest;
 import com.cc.glovobe.model.RegistrationRequest;
 import com.cc.glovobe.model.User;
@@ -24,7 +21,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping(path = {"/", "/user"})
+@RequestMapping(path = {"/user"})
 public class UserController extends ExceptionHandling {
     private AuthenticationManager authenticationManager;
     private UserService userService;
@@ -45,7 +42,7 @@ public class UserController extends ExceptionHandling {
     }
 
     @GetMapping(path = "/confirm")
-    public String confirm(@RequestParam("token") String token) throws TokenNotFoundException {
+    public String confirm(@RequestParam("token") String token) throws TokenNotFoundException, EmailExistException, TokenExpiredException {
         return userService.confirmToken(token);
     }
 
