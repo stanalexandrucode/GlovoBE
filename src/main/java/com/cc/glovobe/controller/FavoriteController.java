@@ -3,6 +3,7 @@ package com.cc.glovobe.controller;
 import com.cc.glovobe.configuration.userprincipalcontext.IAuthenticationFacade;
 import com.cc.glovobe.dto.FavoriteDto;
 import com.cc.glovobe.dto.MealDto;
+import com.cc.glovobe.exception.ExceptionHandling;
 import com.cc.glovobe.exception.domain.FavoriteMealNotFoundException;
 import com.cc.glovobe.exception.domain.MealNotFoundException;
 import com.cc.glovobe.exception.domain.UserNotFoundException;
@@ -23,7 +24,7 @@ import static org.springframework.http.HttpStatus.*;
 @RestController
 @RequestMapping("/favorite")
 @CrossOrigin(origins = "http://localhost:3000")
-public class FavoriteController {
+public class FavoriteController extends ExceptionHandling {
 
     public static final String FAVORITE_MEAL_DELETE_SUCCESSFULLY = "Favorite meal delete successfully";
     private final FavoriteService favoriteService;

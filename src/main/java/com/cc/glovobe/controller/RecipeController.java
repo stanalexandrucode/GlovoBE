@@ -3,6 +3,7 @@ package com.cc.glovobe.controller;
 
 import com.cc.glovobe.configuration.userprincipalcontext.IAuthenticationFacade;
 import com.cc.glovobe.dto.RecipeDto;
+import com.cc.glovobe.exception.ExceptionHandling;
 import com.cc.glovobe.exception.domain.UserNotFoundException;
 import com.cc.glovobe.model.Recipe;
 import com.cc.glovobe.service.RecipeService;
@@ -18,7 +19,7 @@ import java.util.List;
 @RequestMapping("/recipes")
 @CrossOrigin(origins = "http://localhost:3000")
 
-public class RecipeController {
+public class RecipeController extends ExceptionHandling {
 
     private final RecipeService recipeService;
     private final IAuthenticationFacade principal;
