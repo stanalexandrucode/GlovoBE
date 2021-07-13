@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -82,7 +81,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setAuthorities(ROLE_USER.getAuthorities());
         user.setIsNonLocked(true);
         user.setEnabled(false);
-        String token = signUpUser(user);
+        String token = createRegistrationToken(user);
         emailService.sendAuthenticationLinkConfirmation(token, request.getEmail());
         return token;
     }
@@ -101,7 +100,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         //verify token if exists
         ConfirmationToken confirmationToken = confirmationTokenService.getToken(token);
-
+        if (confirmationToken == null) {
+            throw new TokenNotFoundException(TOKEN_REGISTRATION_NOT_FOUND + token);
+        }
 
         //verify token if used
         if (confirmationToken.getConfirmedAt() != null) {
@@ -122,7 +123,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     @Transactional
-    public String signUpUser(User user) {
+    public String createRegistrationToken(User user) {
 //      save user in DB
         userRepository.save(user);
 

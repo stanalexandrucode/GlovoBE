@@ -2,6 +2,8 @@ package com.cc.glovobe.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -40,12 +42,11 @@ public class User implements Serializable {
     private String email;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-
+    @NotFound(action= NotFoundAction.IGNORE)
     @OneToMany(
             cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
             mappedBy = "user",
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
+            orphanRemoval = true
     )
     private List<Favorite> favorites = new ArrayList<>();
 
@@ -69,6 +70,17 @@ public class User implements Serializable {
         this.isEnabled = isEnabled;
     }
 
+    public User(String firstName, String lastName, String email, String password, List<Favorite> favorites, String role, String[] authorities, Boolean isNonLocked, Boolean isEnabled) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.favorites = favorites;
+        this.role = role;
+        this.authorities = authorities;
+        this.isNonLocked = isNonLocked;
+        this.isEnabled = isEnabled;
+    }
 
     public Long getId() {
         return id;
@@ -143,7 +155,7 @@ public class User implements Serializable {
     }
 
     public void addFavorite(Favorite favorite) {
-        System.out.println("in user");
+        System.out.println("in user________________________________________________________");
         favorites.add(favorite);
     }
 

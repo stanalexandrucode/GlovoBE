@@ -8,5 +8,6 @@ public class UserImplConstant {
     public static final String EMAIL_ALREADY_CONFIRMED = "email already confirmed";
     public static final String TOKEN_EXPIRED = "Token registration expired: ";
     public static final String REGISTRATION_COMPLETE_MESSAGE = "Registration complete! Please proceed to login page";
+    public static final String TOKEN_REGISTRATION_NOT_FOUND = "Token registration not found: ";
 
 }

@@ -63,7 +63,10 @@ public class FavoriteService {
 /** Doesn't work i dont know WHYYYYYYYY */
 //        user.addFavorite(favorite);
 //        userRepository.save(user);
+//        System.out.println("in favoriteeeeeeeeeeeeeeeeeeeeService--------------------");
+//        return favorite;
     }
+
     @Transactional
     public void deleteFavMealById(Long id, String principalEmail) throws FavoriteMealNotFoundException {
         User user = userRepository.findUserByEmail(principalEmail);
@@ -72,6 +75,7 @@ public class FavoriteService {
 
 
     }
+
     @Transactional
     public User getUserByEmail(String principalEmail) throws UserNotFoundException {
         User user = userRepository.findUserByEmail(principalEmail);
@@ -92,7 +96,7 @@ public class FavoriteService {
 
     private Favorite getFavByIdFromUser(User user, Long id) throws FavoriteMealNotFoundException {
         return user.getFavorites().stream().filter(fav -> fav.getMeal().getId().equals(id)).findFirst()
-                .orElseThrow(()->new FavoriteMealNotFoundException(String.format("favorite with id=%s not found", id)));
+                .orElseThrow(() -> new FavoriteMealNotFoundException(FAVORITE_WITH_ID_S_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)

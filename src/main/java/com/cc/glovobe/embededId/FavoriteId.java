@@ -13,14 +13,11 @@ import java.util.Objects;
 @AllArgsConstructor
 @Setter
 @Getter
-@ToString
 public class FavoriteId implements Serializable {
 
     @Column(name = "user_id")
-    @NotNull
     private Long userId;
 
-    @NotNull
     @Column(name = "meal_id")
     private Long mealId;
 
@@ -37,5 +34,11 @@ public class FavoriteId implements Serializable {
         return Objects.hash(userId, mealId);
     }
 
-
+    @Override
+    public String toString() {
+        return "FavoriteId{" +
+                "userId=" + userId +
+                ", mealId=" + mealId +
+                '}';
+    }
 }
