@@ -1,8 +1,7 @@
 package com.cc.glovobe.embededId;
 
-import com.sun.istack.NotNull;
-import lombok.*;
 
+import lombok.*;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;

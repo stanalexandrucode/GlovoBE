@@ -19,7 +19,6 @@ public class Cart {
     @EmbeddedId
     private CartId id;
 
-
     @ManyToOne
     @JsonIgnore
     @MapsId("userId")
@@ -33,7 +32,7 @@ public class Cart {
     )
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JsonIgnore
     @MapsId("mealId")
     @JoinColumn(
