@@ -1,15 +1,13 @@
 package com.cc.glovobe.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 @ToString
@@ -42,14 +40,6 @@ public class User implements Serializable {
     private String email;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    @NotFound(action= NotFoundAction.IGNORE)
-    @OneToMany(
-            cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
-            mappedBy = "user",
-            orphanRemoval = true
-    )
-    private List<Favorite> favorites = new ArrayList<>();
-
     private String role; //ROLE_USER{ read, edit }, ROLE_ADMIN {delete}
     private String[] authorities;
     private Boolean isNonLocked;
@@ -70,12 +60,11 @@ public class User implements Serializable {
         this.isEnabled = isEnabled;
     }
 
-    public User(String firstName, String lastName, String email, String password, List<Favorite> favorites, String role, String[] authorities, Boolean isNonLocked, Boolean isEnabled) {
+    public User(String firstName, String lastName, String email, String password, String role, String[] authorities, Boolean isNonLocked, Boolean isEnabled) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.favorites = favorites;
         this.role = role;
         this.authorities = authorities;
         this.isNonLocked = isNonLocked;
@@ -154,30 +143,19 @@ public class User implements Serializable {
         isEnabled = enabled;
     }
 
-    public void addFavorite(Favorite favorite) {
-        System.out.println("in user________________________________________________________");
-        favorites.add(favorite);
-    }
 
-    public void removeFavorite(Favorite favorite) {
-        favorites.remove(favorite);
-    }
-
-    public List<Favorite> getFavorites() {
-        return favorites;
-    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(favorites, user.favorites) && Objects.equals(role, user.role) && Arrays.equals(authorities, user.authorities) && Objects.equals(isNonLocked, user.isNonLocked) && Objects.equals(isEnabled, user.isEnabled);
+        return Objects.equals(id, user.id) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(role, user.role) && Arrays.equals(authorities, user.authorities) && Objects.equals(isNonLocked, user.isNonLocked) && Objects.equals(isEnabled, user.isEnabled);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, firstName, lastName, email, password, favorites, role, isNonLocked, isEnabled);
+        int result = Objects.hash(id, firstName, lastName, email, password, role, isNonLocked, isEnabled);
         result = 31 * result + Arrays.hashCode(authorities);
         return result;
     }

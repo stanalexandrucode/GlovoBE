@@ -28,7 +28,6 @@ import static java.util.stream.Collectors.toSet;
 public class FavoriteService {
     public static final String PRINCIPAL_NOT_FOUND_WITH_EMAIL = "Principal not found with email: ";
     public static final String MEAL_NOT_FOUND_WITH_ID = "Meal not found with id: ";
-    public static final String FAVORITE_WITH_ID_S_NOT_FOUND = "Favorite with id=%s not found";
     private final UserRepository userRepository;
     private final MealRepository mealRepository;
     private final FavoriteRepository favoriteRepository;
@@ -60,18 +59,17 @@ public class FavoriteService {
         favoriteRepository.save(favorite);
         return favorite;
 
-/** Doesn't work i dont know WHYYYYYYYY */
-//        user.addFavorite(favorite);
-//        userRepository.save(user);
-//        System.out.println("in favoriteeeeeeeeeeeeeeeeeeeeService--------------------");
-//        return favorite;
     }
 
     @Transactional
-    public void deleteFavMealById(Long id, String principalEmail) throws FavoriteMealNotFoundException {
+    public void deleteFavMealById(Long id, String principalEmail) throws MealNotFoundException {
         User user = userRepository.findUserByEmail(principalEmail);
-        Favorite favorite = getFavByIdFromUser(user, id);
-        user.removeFavorite(favorite);
+        Meal meal = getMealById(id);
+
+        FavoriteId favoriteId = new FavoriteId();
+        favoriteId.setUserId(user.getId());
+        favoriteId.setMealId(meal.getId());
+        favoriteRepository.deleteFavoriteById(favoriteId);
 
 
     }
@@ -94,15 +92,11 @@ public class FavoriteService {
     }
 
 
-    private Favorite getFavByIdFromUser(User user, Long id) throws FavoriteMealNotFoundException {
-        return user.getFavorites().stream().filter(fav -> fav.getMeal().getId().equals(id)).findFirst()
-                .orElseThrow(() -> new FavoriteMealNotFoundException(FAVORITE_WITH_ID_S_NOT_FOUND));
-    }
-
     @Transactional(readOnly = true)
-    public List<MealDto> getAllMeals(String principal) throws UserNotFoundException {
+    public List<MealDto> getAllFavoriteMeals(String principal) throws UserNotFoundException {
         User user = getUserByEmail(principal);
-        return user.getFavorites()
+        List<Favorite> favorites = favoriteRepository.findFavoritesByUser(user);
+        return favorites
                 .stream()
                 .map(mealMapper::mealToMealDto)
                 .collect(Collectors.toList());

@@ -4,7 +4,6 @@ import com.cc.glovobe.configuration.userprincipalcontext.IAuthenticationFacade;
 import com.cc.glovobe.dto.FavoriteDto;
 import com.cc.glovobe.dto.MealDto;
 import com.cc.glovobe.exception.ExceptionHandling;
-import com.cc.glovobe.exception.domain.FavoriteMealNotFoundException;
 import com.cc.glovobe.exception.domain.MealNotFoundException;
 import com.cc.glovobe.exception.domain.UserNotFoundException;
 import com.cc.glovobe.model.Favorite;
@@ -13,11 +12,9 @@ import com.cc.glovobe.service.FavoriteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -47,12 +44,12 @@ public class FavoriteController extends ExceptionHandling {
     @GetMapping()
     public ResponseEntity<List<MealDto>> getFavMeals() throws UserNotFoundException {
         String userPrincipal = principal.getAuthentication().getName();
-        List<MealDto> allMeals = favoriteService.getAllMeals(userPrincipal);
+        List<MealDto> allMeals = favoriteService.getAllFavoriteMeals(userPrincipal);
         return new ResponseEntity<>(allMeals, OK);
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<HttpResponse> deleteFavMeal(@PathVariable Long id) throws FavoriteMealNotFoundException {
+    public ResponseEntity<HttpResponse> deleteFavMeal(@PathVariable Long id) throws MealNotFoundException {
         String userPrincipal = principal.getAuthentication().getName();
         favoriteService.deleteFavMealById(id, userPrincipal);
         return response(OK, FAVORITE_MEAL_DELETE_SUCCESSFULLY);
