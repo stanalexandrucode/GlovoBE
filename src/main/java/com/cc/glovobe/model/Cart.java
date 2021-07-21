@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -19,9 +21,10 @@ public class Cart {
     @EmbeddedId
     private CartId id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JsonIgnore
     @MapsId("userId")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(
             name = "user_id",
             nullable = false,
@@ -32,9 +35,10 @@ public class Cart {
     )
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JsonIgnore
     @MapsId("mealId")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(
             name = "meal_id",
             nullable = false,

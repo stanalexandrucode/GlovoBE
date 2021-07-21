@@ -11,11 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UserRepository extends JpaRepository<User, Long> {
     User findUserByEmail(String Email);
 
-    User findUserById(Long id);
+    void deleteUserById(Long id);
 
-    @Transactional
-    @Modifying
-    @Query("UPDATE AppUser a " +
-            "SET a.isEnabled = TRUE WHERE a.email = ?1")
-    int enableUser(String email);
+
 }

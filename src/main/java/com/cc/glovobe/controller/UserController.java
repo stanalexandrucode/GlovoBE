@@ -2,15 +2,13 @@ package com.cc.glovobe.controller;
 
 import com.cc.glovobe.exception.ExceptionHandling;
 import com.cc.glovobe.exception.domain.*;
-import com.cc.glovobe.model.LoginRequest;
-import com.cc.glovobe.model.RegistrationRequest;
-import com.cc.glovobe.model.User;
-import com.cc.glovobe.model.UserPrincipal;
+import com.cc.glovobe.model.*;
 import com.cc.glovobe.service.UserService;
 import com.cc.glovobe.utility.JWTTokenProvider;
 import com.sun.xml.messaging.saaj.packaging.mime.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -55,6 +53,13 @@ public class UserController extends ExceptionHandling {
         return new ResponseEntity<>(loginUser, jwtHeader, OK);
     }
 
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<HttpResponse> deleteUser(@PathVariable Long id){
+        userService.deleteUserById(id);
+        return response(OK, "User successfully deleted");
+    }
+
+
     private HttpHeaders getJwtHeader(UserPrincipal user) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(JWT_TOKEN_HEADER, jwtTokenProvider.generateJwtToken(user));
@@ -66,5 +71,12 @@ public class UserController extends ExceptionHandling {
     private void authenticate(String username, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
     }
+
+
+    private ResponseEntity<HttpResponse> response(HttpStatus httpStatus, String message) {
+        return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus, httpStatus.getReasonPhrase().toUpperCase(),
+                message), httpStatus);
+    }
+
 
 }

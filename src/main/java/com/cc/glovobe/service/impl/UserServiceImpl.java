@@ -152,8 +152,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
     }
 
-    public int enableUser(String email) {
-        return userRepository.enableUser(email);
+    public void deleteUserById(Long id) {
+        userRepository.deleteUserById(id);
+    }
+
+
+    public void enableUser(String email) {
+        User user = userRepository.findUserByEmail(email);
+        user.setEnabled(true);
+        userRepository.save(user);
     }
 
     @Override

@@ -2,6 +2,9 @@ package com.cc.glovobe.model;
 
 import com.cc.glovobe.embededId.FavoriteId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -13,16 +16,18 @@ public class Favorite {
     @EmbeddedId
     private FavoriteId id;
 
-    @JsonIgnore
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("userId")
-    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "favorite_user_id_fk"))
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "favorite_user_id_fk"), nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
     private User user;
 
-    @JsonIgnore
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("mealId")
-    @JoinColumn(name = "meal_id", foreignKey = @ForeignKey(name = "favorite_meal_id_fk"))
+    @JoinColumn(name = "meal_id", foreignKey = @ForeignKey(name = "favorite_meal_id_fk"),nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
     private Meal meal;
 
     @Column(

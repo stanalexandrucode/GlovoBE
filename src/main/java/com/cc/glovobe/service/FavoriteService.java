@@ -71,7 +71,6 @@ public class FavoriteService {
         favoriteId.setMealId(meal.getId());
         favoriteRepository.deleteFavoriteById(favoriteId);
 
-
     }
 
     @Transactional
@@ -83,15 +82,6 @@ public class FavoriteService {
         return user;
     }
 
-    private Meal getMealById(Long id) throws MealNotFoundException {
-        Meal meal = mealRepository.findMealById(id);
-        if (meal == null) {
-            throw new MealNotFoundException(MEAL_NOT_FOUND_WITH_ID + id);
-        }
-        return meal;
-    }
-
-
     @Transactional(readOnly = true)
     public List<MealDto> getAllFavoriteMeals(String principal) throws UserNotFoundException {
         User user = getUserByEmail(principal);
@@ -100,5 +90,13 @@ public class FavoriteService {
                 .stream()
                 .map(mealMapper::mealToMealDto)
                 .collect(Collectors.toList());
+    }
+
+    Meal getMealById(Long id) throws MealNotFoundException {
+        Meal meal = mealRepository.findMealById(id);
+        if (meal == null) {
+            throw new MealNotFoundException(MEAL_NOT_FOUND_WITH_ID + id);
+        }
+        return meal;
     }
 }

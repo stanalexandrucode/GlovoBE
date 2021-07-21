@@ -18,4 +18,5 @@ public interface UserService {
 
     String confirmToken(String token) throws TokenNotFoundException, EmailExistException, TokenExpiredException;
 
+    void deleteUserById(Long id);
 }
