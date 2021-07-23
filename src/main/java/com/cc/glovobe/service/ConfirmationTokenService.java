@@ -6,7 +6,7 @@ import com.cc.glovobe.model.ConfirmationToken;
 
 
 public interface ConfirmationTokenService {
-    void saveConfirmationToken(ConfirmationToken token);
+    ConfirmationToken saveConfirmationToken(ConfirmationToken token);
 
     ConfirmationToken getToken(String token) throws TokenNotFoundException;
 

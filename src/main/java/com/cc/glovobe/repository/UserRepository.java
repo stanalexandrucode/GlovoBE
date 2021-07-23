@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UserRepository extends JpaRepository<User, Long> {
     User findUserByEmail(String Email);
 
-    void deleteUserById(Long id);
+    int deleteUserById(Long id);
 
 
 }

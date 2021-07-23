@@ -12,10 +12,12 @@ import com.cc.glovobe.service.ConfirmationTokenService;
 import com.cc.glovobe.service.EmailService;
 import com.cc.glovobe.service.LoginAttemptService;
 import com.cc.glovobe.service.UserService;
+import com.cc.glovobe.utility.TokenGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static com.cc.glovobe.constant.UserImplConstant.*;
 import static com.cc.glovobe.enumeration.Role.ROLE_USER;
@@ -41,15 +42,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailService emailService;
     private final LoginAttemptService loginAttemptService;
+    private final TokenGenerator generateToken;
 
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, ConfirmationTokenService confirmationTokenService, BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService, LoginAttemptService loginAttemptService) {
+    public UserServiceImpl(UserRepository userRepository, ConfirmationTokenService confirmationTokenService, BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService, LoginAttemptService loginAttemptService, TokenGenerator generateToken) {
         this.userRepository = userRepository;
         this.confirmationTokenService = confirmationTokenService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.emailService = emailService;
         this.loginAttemptService = loginAttemptService;
+        this.generateToken = generateToken;
     }
 
 
@@ -81,12 +84,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setAuthorities(ROLE_USER.getAuthorities());
         user.setIsNonLocked(true);
         user.setEnabled(false);
+        userRepository.save(user);
         String token = createRegistrationToken(user);
         emailService.sendAuthenticationLinkConfirmation(token, request.getEmail());
         return token;
     }
 
-    private User validateNewEmail(String email) throws EmailExistException {
+    protected User validateNewEmail(String email) throws EmailExistException {
         User userByEmail = findUserByEmail(email);
         if (userByEmail != null) {
             throw new EmailExistException(EMAIL_ALREADY_EXIST + email);
@@ -122,13 +126,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
 
-    @Transactional
-    public String createRegistrationToken(User user) {
-//      save user in DB
-        userRepository.save(user);
 
+    private String createRegistrationToken(User user) {
 //      create token
-        String token = UUID.randomUUID().toString();
+        String token = generateToken.generateToken();
         ConfirmationToken confirmationToken = new ConfirmationToken(
                 token,
                 LocalDateTime.now(),
@@ -139,6 +140,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         confirmationTokenService.saveConfirmationToken(confirmationToken);
         return token;
     }
+
 
     private void validateLoginAttempt(User user) {
         if (user.getIsNonLocked()) {
@@ -152,11 +154,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
     }
 
+    @Modifying
     public void deleteUserById(Long id) {
         userRepository.deleteUserById(id);
     }
 
-
+    @Modifying
     public void enableUser(String email) {
         User user = userRepository.findUserByEmail(email);
         user.setEnabled(true);
