@@ -21,7 +21,6 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -69,10 +68,6 @@ class UserServiceImplTest {
     @Test
     void canLoadUserByUsername() {
 //      given
-        UserDetails userPrincipal = UserPrincipal.builder()
-                .user(aUser())
-                .build();
-
         User userUnderTest = new User();
         String usernameEmail = "nelu@gmail.com";
         userUnderTest.setId(1L);
@@ -83,12 +78,19 @@ class UserServiceImplTest {
         userUnderTest.setRole(ROLE_USER.name());
         userUnderTest.setAuthorities(ROLE_USER.getAuthorities());
         userUnderTest.setIsNonLocked(true);
-        userUnderTest.setEnabled(false);
+        userUnderTest.setEnabled(true);
+
+        UserPrincipal userPrincipal = new UserPrincipal(userUnderTest);
+
+
         when(userRepository.findUserByEmail(eq(usernameEmail))).thenReturn(userUnderTest);
 //        when
-        UserDetails userDetails = underTest.loadUserByUsername(usernameEmail);
+        UserPrincipal userDetails = (UserPrincipal) underTest.loadUserByUsername(usernameEmail);
         //given
         verify(userRepository).findUserByEmail(eq(usernameEmail));
+        verify(userRepository).save(userUnderTest);
+
+//        assertThat(userDetails).isEqualTo(userPrincipal);
     }
 
 
@@ -179,34 +181,12 @@ class UserServiceImplTest {
         assertThatThrownBy(() -> underTest.register(request))
                 .hasMessage(EMAIL_ALREADY_EXIST + request.getEmail())
                 .isInstanceOf(EmailExistException.class);
-
-    }
-
-//    @Test
-//    void checkRegistrationWillThrowWhenMessagingException() throws MessagingException {
-////        given
-//        String token = "asdsad";
-//        RegistrationRequest request = new RegistrationRequest(
-//                "Alex",
-//                "Stan",
-//                "nelu@gmail.com",
-//                "password");
-//    doThrow(new MessagingException("Error occurred")).when(emailService).sendAuthenticationLinkConfirmation(token, request.getEmail());
-//        emailService.sendAuthenticationLinkConfirmation(token, request.getEmail());
-////        when
-////        then
-//        assertThatThrownBy(() -> underTest.register(request))
-//                .isInstanceOf(MessagingException.class);
-//    }
-
-    @Test
-    void canConfirmToken() throws TokenNotFoundException, EmailExistException, TokenExpiredException {
-
     }
 
 
     @Test
     void canCreateRegistrationToken() {
+        //given
         User user = aUser();
         String token = UUID.randomUUID().toString();
         ConfirmationToken confirmationToken = new ConfirmationToken(
@@ -220,66 +200,97 @@ class UserServiceImplTest {
         userRepository.save(user);
 
         when(confirmationTokenService.saveConfirmationToken(confirmationToken)).thenReturn(confirmationToken);
+        //when
         ConfirmationToken confirmationToken1 = confirmationTokenService.saveConfirmationToken(confirmationToken);
-
+        //then
         assertThat(confirmationToken1).isEqualTo(confirmationToken);
     }
 
     @Test
-    void willThrowWhenTokenNotFoundException() throws EmailExistException, TokenExpiredException, TokenNotFoundException {
-        String token = "qwerrty";
+    void checkConfirmationToken() throws EmailExistException, TokenExpiredException, TokenNotFoundException {
+//      given
+        when(generateToken.generateToken()).thenReturn("token123");
+        String generatedToken = generateToken.generateToken();
+        ConfirmationToken confirmationToken = new ConfirmationToken(
+                generatedToken,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(15),
+                aUser());
 
-        exceptionRule.expect(TokenNotFoundException.class);
-        exceptionRule.expectMessage(TOKEN_REGISTRATION_NOT_FOUND + token);
-        when(confirmationTokenService.getToken(token)).thenReturn(null);
-        underTest.confirmToken(token);
+        when(confirmationTokenService.getToken(generatedToken)).thenReturn(confirmationToken);
+        when(userRepository.findUserByEmail(any())).thenReturn(aUser());
+        User userUnderTest = userRepository.findUserByEmail(any());
+//      when
+        String registrationCompleted = underTest.confirmToken(generatedToken);
+
+//      then
+        verify(confirmationTokenService).getToken(generatedToken);
+        verify(confirmationTokenService).setConfirmedAt(generatedToken);
+        verify(userRepository).save(userUnderTest);
+
+        assertThat(registrationCompleted).isEqualTo(REGISTRATION_COMPLETE_MESSAGE);
     }
 
 
     @Test
-    void willThrowWhenEmailExistException() throws EmailExistException, TokenExpiredException, TokenNotFoundException {
-        String token = "qwerrty";
-        ConfirmationToken confirmationTokenBuild = new ConfirmationToken(
-                token,
+    void willThrowWhenEmailExistExceptionInConfirmToken() throws TokenNotFoundException {
+//        given
+        when(generateToken.generateToken()).thenReturn("token123");
+        String generatedToken = generateToken.generateToken();
+        ConfirmationToken confirmationToken = new ConfirmationToken(
+                1L,
+                generatedToken,
                 LocalDateTime.now(),
                 LocalDateTime.now().minus(Period.ofDays(10)),
+                LocalDateTime.now(),
                 UsersPrototype.aUser()
 
         );
-
-        exceptionRule.expect(EmailExistException.class);
-        exceptionRule.expectMessage(EMAIL_ALREADY_CONFIRMED);
-        when(confirmationTokenService.getToken(token)).thenReturn(confirmationTokenBuild);
-        confirmationTokenService.getToken(token);
-        when(confirmationTokenService.getToken(token).getConfirmedAt()).thenReturn(null);
-        underTest.confirmToken(token);
+        when(confirmationTokenService.getToken(generatedToken)).thenReturn(confirmationToken);
+//        when
+//        then
+        assertThatThrownBy(() -> underTest.confirmToken(generatedToken))
+                .hasMessage(EMAIL_ALREADY_CONFIRMED)
+                .isInstanceOf(EmailExistException.class);
     }
 
     @Test
-    void willThrowWhenTokenExpiredException() throws EmailExistException, TokenExpiredException, TokenNotFoundException {
-        String token = "qwerrty";
-        ConfirmationToken confirmationTokenBuild = new ConfirmationToken(
-                token,
-                LocalDateTime.now(),
-                LocalDateTime.now().minus(Period.ofDays(10)),
-                UsersPrototype.aUser()
-
-        );
-
-        exceptionRule.expect(TokenExpiredException.class);
-        exceptionRule.expectMessage(TOKEN_EXPIRED + token);
-        when(confirmationTokenService.getToken(token)).thenReturn(confirmationTokenBuild);
-        confirmationTokenService.getToken(token);
-        underTest.confirmToken(token);
-
+    void willThrowWhenTokenNotFoundException() throws TokenNotFoundException {
+        when(generateToken.generateToken()).thenReturn("token123");
+        String generatedToken = generateToken.generateToken();
+        when(confirmationTokenService.getToken(generatedToken)).thenReturn(null);
+//        when
+//        then
+        assertThatThrownBy(() -> underTest.confirmToken(generatedToken))
+                .hasMessage(TOKEN_REGISTRATION_NOT_FOUND + generatedToken)
+                .isInstanceOf(TokenNotFoundException.class);
     }
+
+    @Test
+    void willThrowWhenTokenExpiredException() throws TokenNotFoundException {
+//        given
+        when(generateToken.generateToken()).thenReturn("token123");
+        String generatedToken = generateToken.generateToken();
+        ConfirmationToken confirmationToken = new ConfirmationToken(
+                generatedToken,
+                LocalDateTime.now(),
+                LocalDateTime.now().minusMinutes(15),
+                aUser());
+        when(confirmationTokenService.getToken(generatedToken)).thenReturn(confirmationToken);
+//        when
+//        then
+        assertThatThrownBy(() -> underTest.confirmToken(generatedToken))
+                .hasMessage(TOKEN_EXPIRED + generatedToken)
+                .isInstanceOf(TokenExpiredException.class);
+    }
+
 
     @Test
     void canDeleteUserById() {
-//        when
-        underTest = new UserServiceImpl(userRepository, confirmationTokenService, bCryptPasswordEncoder, emailService, loginAttemptService, generateToken);
-        underTest.deleteUserById(1L);
 //        given
+//        when
+        underTest.deleteUserById(1L);
+//        then
         verify(userRepository).deleteUserById(1L);
 
     }
@@ -287,10 +298,10 @@ class UserServiceImplTest {
     @Test
     void canFindUserByEmail() {
 //        given
-        String email = "asdsadsd";
-        underTest = new UserServiceImpl(userRepository, confirmationTokenService, bCryptPasswordEncoder, emailService, loginAttemptService, generateToken);
-        underTest.findUserByEmail(email);
 //        when
+        String email = "asdsadsd";
+        underTest.findUserByEmail(email);
+//        given
         verify(userRepository).findUserByEmail(email);
     }
 

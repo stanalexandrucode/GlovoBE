@@ -121,7 +121,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         confirmationTokenService.setConfirmedAt(token);
-        enableUser(confirmationToken.getUser().getEmail());
+        User user = userRepository.findUserByEmail(confirmationToken.getUser().getEmail());
+        user.setEnabled(true);
+        userRepository.save(user);
         return REGISTRATION_COMPLETE_MESSAGE;
     }
 
@@ -157,13 +159,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Modifying
     public void deleteUserById(Long id) {
         userRepository.deleteUserById(id);
-    }
-
-    @Modifying
-    public void enableUser(String email) {
-        User user = userRepository.findUserByEmail(email);
-        user.setEnabled(true);
-        userRepository.save(user);
     }
 
     @Override
