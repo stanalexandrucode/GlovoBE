@@ -17,11 +17,10 @@ Add to cart option is the last step before the payment and on this page, the use
 
 ![Categories](/img/categories.png 'Categories')
 
-Documentation of the API using Swagger v3 (OpenApi)
-
 The application has unit, integration tests
 ![Tests](/img/Tests.png 'Tests')
 
+Documentation of the API using Swagger v3 (OpenApi)
 ![Swagger](/img/swagger.png 'Swagger')
 
 
