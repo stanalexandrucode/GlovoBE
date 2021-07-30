@@ -19,6 +19,9 @@ Add to cart option is the last step before the payment and on this page, the use
 
 Documentation of the API using Swagger v3 (OpenApi)
 
+The application has unit, integration tests
+![Tests](/img/Tests.png 'Tests')
+
 ![Swagger](/img/swagger.png 'Swagger')
 
 
