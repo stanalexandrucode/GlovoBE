@@ -15,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 
 import static com.cc.glovobe.constant.SecurityConstant.JWT_TOKEN_HEADER;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -45,16 +46,16 @@ public class UserController extends ExceptionHandling {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginRequest data) {
-        authenticate(data.getEmail(), data.getPassword());
-        User loginUser = userService.findUserByEmail(data.getEmail());
+    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+        authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+        User loginUser = userService.findUserByEmail(loginRequest.getEmail());
         UserPrincipal userPrincipal = new UserPrincipal(loginUser);
         HttpHeaders jwtHeader = getJwtHeader(userPrincipal);
         return new ResponseEntity<>(loginUser, jwtHeader, OK);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<HttpResponse> deleteUser(@PathVariable Long id){
+    public ResponseEntity<HttpResponse> deleteUser(@PathVariable Long id) {
         userService.deleteUserById(id);
         return response(OK, "User successfully deleted");
     }
