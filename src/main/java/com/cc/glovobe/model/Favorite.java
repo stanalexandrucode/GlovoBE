@@ -2,10 +2,8 @@ package com.cc.glovobe.model;
 
 import com.cc.glovobe.embededId.FavoriteId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -13,22 +11,23 @@ import java.util.Objects;
 
 @Entity(name = "Favorite")
 @Table(name = "favorite")
-
 public class Favorite {
 
     @EmbeddedId
     private FavoriteId id;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("userId")
-    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "favorite_user_id_fk"))
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "favorite_user_id_fk"), nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
     private User user;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("mealId")
-    @JoinColumn(name = "meal_id", foreignKey = @ForeignKey(name = "favorite_meal_id_fk"))
+    @JoinColumn(name = "meal_id", foreignKey = @ForeignKey(name = "favorite_meal_id_fk"),nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
     private Meal meal;
 
     @Column(
@@ -39,18 +38,6 @@ public class Favorite {
     private LocalDateTime createdAt;
 
 
-    public Favorite(User user, Meal meal, LocalDateTime createdAt) {
-        this.user = user;
-        this.meal = meal;
-        this.createdAt = createdAt;
-    }
-
-    public Favorite(FavoriteId id, User user, Meal meal, LocalDateTime createdAt) {
-        this.id = id;
-        this.user = user;
-        this.meal = meal;
-        this.createdAt = createdAt;
-    }
     public Favorite(FavoriteId id, Meal meal, LocalDateTime createdAt) {
         this.id = id;
         this.meal = meal;
@@ -110,7 +97,6 @@ public class Favorite {
     public String toString() {
         return "Favorite{" +
                 "id=" + id +
-                ", createdAt=" + createdAt +
                 '}';
     }
 }

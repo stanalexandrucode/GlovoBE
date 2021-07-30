@@ -20,8 +20,9 @@ public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
     }
 
     @Override
-    public void saveConfirmationToken(ConfirmationToken token) {
+    public ConfirmationToken saveConfirmationToken(ConfirmationToken token) {
         confirmationTokenRepository.save(token);
+        return token;
     }
 
     @Override

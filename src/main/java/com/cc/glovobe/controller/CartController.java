@@ -2,6 +2,7 @@ package com.cc.glovobe.controller;
 
 import com.cc.glovobe.configuration.userprincipalcontext.IAuthenticationFacade;
 import com.cc.glovobe.dto.CartDto;
+import com.cc.glovobe.exception.ExceptionHandling;
 import com.cc.glovobe.exception.domain.CartItemNotFoundException;
 import com.cc.glovobe.service.CartService;
 import com.sun.istack.NotNull;
@@ -17,7 +18,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @RequestMapping("/cart")
 @CrossOrigin(origins = "http://localhost:3000")
-public class CartController {
+public class CartController extends ExceptionHandling {
 
     private final CartService cartService;
     private final IAuthenticationFacade principal;

@@ -1,6 +1,7 @@
 package com.cc.glovobe.service.impl;
 
 import com.cc.glovobe.exception.domain.EmailExistException;
+import com.cc.glovobe.exception.domain.TokenExpiredException;
 import com.cc.glovobe.exception.domain.TokenNotFoundException;
 import com.cc.glovobe.model.ConfirmationToken;
 import com.cc.glovobe.model.RegistrationRequest;
@@ -11,11 +12,13 @@ import com.cc.glovobe.service.ConfirmationTokenService;
 import com.cc.glovobe.service.EmailService;
 import com.cc.glovobe.service.LoginAttemptService;
 import com.cc.glovobe.service.UserService;
+import com.cc.glovobe.utility.TokenGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,13 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static com.cc.glovobe.constant.UserImplConstant.*;
 import static com.cc.glovobe.enumeration.Role.ROLE_USER;
 
 @Service
 @Transactional
+@Primary
 @Qualifier("userDetailsService")
 public class UserServiceImpl implements UserService, UserDetailsService {
     private Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -41,15 +44,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailService emailService;
     private final LoginAttemptService loginAttemptService;
+    private final TokenGenerator generateToken;
 
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, ConfirmationTokenService confirmationTokenService, BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService, LoginAttemptService loginAttemptService) {
+    public UserServiceImpl(UserRepository userRepository, ConfirmationTokenService confirmationTokenService, BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService, LoginAttemptService loginAttemptService, TokenGenerator generateToken) {
         this.userRepository = userRepository;
         this.confirmationTokenService = confirmationTokenService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.emailService = emailService;
         this.loginAttemptService = loginAttemptService;
+        this.generateToken = generateToken;
     }
 
 
@@ -81,12 +86,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setAuthorities(ROLE_USER.getAuthorities());
         user.setIsNonLocked(true);
         user.setEnabled(false);
-        String token = signUpUser(user);
+        userRepository.save(user);
+        String token = createRegistrationToken(user);
         emailService.sendAuthenticationLinkConfirmation(token, request.getEmail());
         return token;
     }
 
-    private User validateNewEmail(String email) throws EmailExistException {
+    protected User validateNewEmail(String email) throws EmailExistException {
         User userByEmail = findUserByEmail(email);
         if (userByEmail != null) {
             throw new EmailExistException(EMAIL_ALREADY_EXIST + email);
@@ -96,37 +102,38 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     @Transactional
-    public String confirmToken(String token) throws TokenNotFoundException {
+    public String confirmToken(String token) throws TokenNotFoundException, EmailExistException, TokenExpiredException {
 
         //verify token if exists
         ConfirmationToken confirmationToken = confirmationTokenService.getToken(token);
-
+        if (confirmationToken == null) {
+            throw new TokenNotFoundException(TOKEN_REGISTRATION_NOT_FOUND + token);
+        }
 
         //verify token if used
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new IllegalStateException(EMAIL_ALREADY_CONFIRMED);
+            throw new EmailExistException(EMAIL_ALREADY_CONFIRMED);
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         //verify token if expired
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException(TOKEN_EXPIRED + token);
+            throw new TokenExpiredException(TOKEN_EXPIRED + token);
         }
 
         confirmationTokenService.setConfirmedAt(token);
-        enableUser(confirmationToken.getUser().getEmail());
+        User user = userRepository.findUserByEmail(confirmationToken.getUser().getEmail());
+        user.setEnabled(true);
+        userRepository.save(user);
         return REGISTRATION_COMPLETE_MESSAGE;
     }
 
 
-    @Transactional
-    public String signUpUser(User user) {
-//      save user in DB
-        userRepository.save(user);
 
+    private String createRegistrationToken(User user) {
 //      create token
-        String token = UUID.randomUUID().toString();
+        String token = generateToken.generateToken();
         ConfirmationToken confirmationToken = new ConfirmationToken(
                 token,
                 LocalDateTime.now(),
@@ -138,21 +145,22 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return token;
     }
 
+
     private void validateLoginAttempt(User user) {
-        UserPrincipal userPrincipal = new UserPrincipal(user);
         if (user.getIsNonLocked()) {
-            if (loginAttemptService.hasExceededMaxAttempts(userPrincipal.getUsername())) {
+            if (loginAttemptService.hasExceededMaxAttempts(user.getEmail())) {
                 user.setIsNonLocked(false);
             } else {
                 user.setIsNonLocked(true);
             }
         } else {
-            loginAttemptService.evictUserFromLoginAttemptCache(userPrincipal.getUsername());
+            loginAttemptService.evictUserFromLoginAttemptCache(user.getEmail());
         }
     }
 
-    public int enableUser(String email) {
-        return userRepository.enableUser(email);
+    @Modifying
+    public void deleteUserById(Long id) {
+        userRepository.deleteUserById(id);
     }
 
     @Override

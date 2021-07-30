@@ -1,5 +1,6 @@
 package com.cc.glovobe.model;
 
+import lombok.Builder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
+@Builder
 public class UserPrincipal implements UserDetails {
     private User user;
 
@@ -48,5 +50,12 @@ public class UserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.user.getEnabled();
+    }
+
+    @Override
+    public String toString() {
+        return "UserPrincipal{" +
+                "user=" + user +
+                '}';
     }
 }

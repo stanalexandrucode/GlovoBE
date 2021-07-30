@@ -2,6 +2,7 @@ package com.cc.glovobe.model;
 
 
 import lombok.*;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.util.ArrayList;

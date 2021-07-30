@@ -1,7 +1,5 @@
 package com.cc.glovobe.enumeration;
 
-import com.cc.glovobe.constant.Authority;
-
 import static com.cc.glovobe.constant.Authority.*;
 
 public enum Role {

@@ -1,30 +1,26 @@
 package com.cc.glovobe.controller;
 
 import com.cc.glovobe.exception.ExceptionHandling;
-import com.cc.glovobe.exception.domain.EmailExistException;
-import com.cc.glovobe.exception.domain.TokenNotFoundException;
-import com.cc.glovobe.exception.domain.UserNotFoundException;
-import com.cc.glovobe.exception.domain.UsernameExistException;
-import com.cc.glovobe.model.LoginRequest;
-import com.cc.glovobe.model.RegistrationRequest;
-import com.cc.glovobe.model.User;
-import com.cc.glovobe.model.UserPrincipal;
+import com.cc.glovobe.exception.domain.*;
+import com.cc.glovobe.model.*;
 import com.cc.glovobe.service.UserService;
 import com.cc.glovobe.utility.JWTTokenProvider;
 import com.sun.xml.messaging.saaj.packaging.mime.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import static com.cc.glovobe.constant.SecurityConstant.JWT_TOKEN_HEADER;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping(path = {"/", "/user"})
+@RequestMapping(path = {"/user"})
 public class UserController extends ExceptionHandling {
     private AuthenticationManager authenticationManager;
     private UserService userService;
@@ -45,18 +41,25 @@ public class UserController extends ExceptionHandling {
     }
 
     @GetMapping(path = "/confirm")
-    public String confirm(@RequestParam("token") String token) throws TokenNotFoundException {
+    public String confirm(@RequestParam("token") String token) throws TokenNotFoundException, EmailExistException, TokenExpiredException {
         return userService.confirmToken(token);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginRequest data) {
-        authenticate(data.getEmail(), data.getPassword());
-        User loginUser = userService.findUserByEmail(data.getEmail());
+    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+        authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+        User loginUser = userService.findUserByEmail(loginRequest.getEmail());
         UserPrincipal userPrincipal = new UserPrincipal(loginUser);
         HttpHeaders jwtHeader = getJwtHeader(userPrincipal);
         return new ResponseEntity<>(loginUser, jwtHeader, OK);
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<HttpResponse> deleteUser(@PathVariable Long id) {
+        userService.deleteUserById(id);
+        return response(OK, "User successfully deleted");
+    }
+
 
     private HttpHeaders getJwtHeader(UserPrincipal user) {
         HttpHeaders headers = new HttpHeaders();
@@ -69,5 +72,12 @@ public class UserController extends ExceptionHandling {
     private void authenticate(String username, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
     }
+
+
+    private ResponseEntity<HttpResponse> response(HttpStatus httpStatus, String message) {
+        return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus, httpStatus.getReasonPhrase().toUpperCase(),
+                message), httpStatus);
+    }
+
 
 }

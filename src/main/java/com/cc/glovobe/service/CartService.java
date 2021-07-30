@@ -36,6 +36,7 @@ public class CartService {
         User user = userRepository.findUserByEmail(principalEmail);
         Meal meal = mealRepository.findById(cartDto.getMealId()).orElseThrow(() ->
                 new CartItemNotFoundException(String.format("cart with id %s not found", cartDto.getMealId())));
+
         CartId cartId = new CartId();
         cartId.setMealId(meal.getId());
         cartId.setUserId(user.getId());

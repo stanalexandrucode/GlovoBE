@@ -1,9 +1,6 @@
 package com.cc.glovobe.service;
 
-import com.cc.glovobe.exception.domain.EmailExistException;
-import com.cc.glovobe.exception.domain.TokenNotFoundException;
-import com.cc.glovobe.exception.domain.UserNotFoundException;
-import com.cc.glovobe.exception.domain.UsernameExistException;
+import com.cc.glovobe.exception.domain.*;
 import com.cc.glovobe.model.RegistrationRequest;
 import com.cc.glovobe.model.User;
 import com.sun.xml.messaging.saaj.packaging.mime.MessagingException;
@@ -19,6 +16,7 @@ public interface UserService {
 
     User findUserByEmail(String email);
 
-    String confirmToken(String token) throws TokenNotFoundException;
+    String confirmToken(String token) throws TokenNotFoundException, EmailExistException, TokenExpiredException;
 
+    void deleteUserById(Long id);
 }
